@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Mobile polish --- */
+html, body { overscroll-behavior-y: none; }
+:focus-visible { outline: 2px solid rgba(102,195,255,.55); outline-offset: 2px; }
+
+/* Remove 300ms tap highlight and accidental blue overlay on iOS */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Avoid input zoom on iOS when focusing small inputs */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px; }
+}
+
+/* Safe-area padding for iPhone dynamic island/rounded corners */
+@supports (padding: max(0px)) {
+  body { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+}
