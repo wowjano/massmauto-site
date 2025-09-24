@@ -1,14 +1,15 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Homepage from './Homepage';
-import Admin from './admin/Admin';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Homepage from "./Homepage.jsx";
+import Admin from "./admin/Admin.jsx";
+import VehiclePage from "./pages/VehiclePage.jsx"; // <-- new
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/admin" element={<Admin />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Homepage />} />
+      <Route path="/inventory/:slug" element={<VehiclePage />} /> {/* new */}
+      <Route path="/admin" element={<Admin />} />
+    </Routes>
   );
 }

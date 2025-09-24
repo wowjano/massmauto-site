@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import QuickViewIcon from "./assets/quickview.svg";
 import { supabase } from "./lib/supabaseClient"; // ⬅️ your client
+import { Link } from "react-router-dom";
+import { slugifyVehicle } from "./lib/slug";
 
 // Brand colors (kept)
 const COLORS = {
@@ -1986,7 +1988,11 @@ useEffect(() => {
             setQuery("");
           }}
         />
-        <InventoryGrid cars={visibleCars} onOpen={openModal} />
+        const carsWithSlugs = React.useMemo(
+          () => visibleCars.map(c => ({ ...c, slug: slugifyVehicle(c) })),
+          [visibleCars]
+        );
+        <InventoryGrid cars={carsWithSlugs} onOpen={openModal} />
 
         {visibleCars.length < filtered.length && (
           <div className="mx-auto max-w-7xl px-4 mt-4 mb-2">
