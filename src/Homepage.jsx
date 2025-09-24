@@ -227,13 +227,20 @@ function Hero() {
       />
       <div className="mx-auto max-w-7xl px-4 py-8">
         <div className="flex items-center justify-center gap-3 sm:gap-4 flex-nowrap text-center">
-          {/* Headline */}
+          {/* SEO H1 (visually hidden but still for Google/SEO) */}
           <h1
+            className="sr-only"
+          >
+            Used Cars for Sale in New Bedford, MA – Mass Market Auto Sales
+          </h1>
+
+          {/* Visible headline (same as your original) */}
+          <h2
             className="shrink min-w-0 text-[clamp(28px,4.2vw,44px)] font-extrabold leading-tight tracking-tight underline"
             style={{ color: COLORS.charcoal }}
           >
             Find your next car below
-          </h1>
+          </h2>
 
           {/* Rating pill (baseline aligned with headline) */}
           <div
@@ -1041,7 +1048,7 @@ function VehicleCard({ car, onOpen }) {
       <button onClick={onOpen} className="relative text-left group">
         <img
           src={car.img}
-          alt={`${car.year} ${car.make} ${car.model}`}
+          alt={`${car.year} ${car.make} ${car.model} for sale in New Bedford MA`}
           className={`h-44 xs:h-48 sm:h-56 md:h-52 lg:h-56 w-full object-cover object-center transition-transform duration-200 group-hover:scale-[1.01] ${car.status === "sold" ? "opacity-70" : ""}`}
           loading="lazy"
           decoding="async"
@@ -1828,46 +1835,17 @@ useEffect(() => {
   }, [active]);
 
   useEffect(() => {
-    // Title & meta description
+    // Optional: keep title in case of client-side navigation,
+    // but meta + JSON-LD now live in index.html (avoid duplicates).
     document.title = "Mass Market Auto Sales | Used Cars in New Bedford, MA";
-    const meta = document.createElement("meta");
-    meta.name = "description";
-    meta.content =
-      "Shop quality used cars in New Bedford, MA. Transparent pricing, financing options, and fast approvals at Mass Market Auto Sales.";
-    document.head.appendChild(meta);
 
-    // JSON-LD Business schema (email set to admin for structured data)
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "AutoDealer",
-      name: "Mass Market Auto Sales",
-      telephone: "+1-508-555-0137",
-      email: "admin@massmauto.com",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "20 Granfield St",
-        addressLocality: "New Bedford",
-        addressRegion: "MA",
-        postalCode: "02746",
-        addressCountry: "US"
-      },
-      openingHours: ["Mo-Fr 9:00am-5:00pm", "Sa 10:00am-4:00pm"],
-      image:
-        "https://i.postimg.cc/YSDXdHtW/1754711420035-3d1aa64b-85bd-4e3e-affb-011778aaf3e5-3.jpg",
-      url: "https://massmauto.com"
-    });
-    document.head.appendChild(script);
-
-    // Fetch vehicles + photos
     let ignore = false;
     (async () => {
       const { data, error } = await supabase
         .from("vehicles")
         .select(`id, vin, year, make, model, trim, price, miles, description, status, featured, body_type, created_at, photos:photos(url, sort)`)
         .order("featured", { ascending: false })
-        .order("featured_rank", { ascending: true }) 
+        .order("featured_rank", { ascending: true })
         .order("created_at", { ascending: false });
 
       if (!ignore) {
@@ -1887,12 +1865,12 @@ useEffect(() => {
               price: v.price,
               miles: v.miles,
               img: photos[0] || "",
-              photos, // ⬅️ important for the modal
+              photos,
               vin: v.vin,
               description: v.description,
-              features: [], // add later if you store them in DB
-              bodyType: v.body_type || null, 
-              status: v.status,           // <— carry status forward
+              features: [],
+              bodyType: v.body_type || null,
+              status: v.status,
               isNew,
             };
           });
@@ -1901,11 +1879,7 @@ useEffect(() => {
       }
     })();
 
-    return () => {
-      document.head.removeChild(meta);
-      document.head.removeChild(script);
-      ignore = true;
-    };
+    return () => { ignore = true; };
   }, []);
 
   // Build the Make list from live data
@@ -2087,7 +2061,7 @@ useEffect(() => {
                         <motion.img
                           key={active.photos?.[slide] ?? "placeholder"}
                           src={active.photos?.[slide] ?? "https://placehold.co/1200x675?text=No+Image"}
-                          alt="Vehicle"
+                          alt={`${active?.year ?? ""} ${active?.make ?? ""} ${active?.model ?? ""} - photo ${slide + 1} at Mass Market Auto Sales New Bedford MA`}
                           className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -2147,7 +2121,11 @@ useEffect(() => {
                             }}
                             aria-label={`Open photo ${i + 1}`}
                           >
-                            <img src={src} alt="thumb" className="h-full w-full object-contain" />
+                            <img
+                              src={src}
+                              alt={`${active?.year ?? ""} ${active?.make ?? ""} ${active?.model ?? ""} thumbnail ${i + 1}`}
+                              className="h-full w-full object-contain"
+                            />
                           </button>
                         ))}
                       </div>

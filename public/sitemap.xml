@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://massmauto.com/</loc><priority>1.0</priority></url>
-  <url><loc>https://massmauto.com/#inventory</loc><priority>0.8</priority></url>
-  <url><loc>https://massmauto.com/#finance</loc><priority>0.7</priority></url>
-  <url><loc>https://massmauto.com/#contact</loc><priority>0.7</priority></url>
-  <url><loc>https://massmauto.com/#reviews</loc><priority>0.6</priority></url>
-  <url><loc>https://massmauto.com/#about</loc><priority>0.5</priority></url>
+  <url>
+    <loc>https://massmauto.com/</loc>
+    <lastmod>2025-09-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
 </urlset>

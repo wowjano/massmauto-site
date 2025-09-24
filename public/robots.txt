@@ -1,5 +1,4 @@
 User-agent: *
-Disallow: /admin
 Allow: /
-
+Disallow: /admin/
 Sitemap: https://massmauto.com/sitemap.xml
