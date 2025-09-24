@@ -4,6 +4,13 @@ export function slugifyVehicle(v) {
   return `${slug}-${v.id}`;
 }
 export function getIdFromSlug(slug) {
-  const m = slug.match(/-(\d+|[a-f0-9-]{8,})$/i);
-  return m ? m[1] : null;
+  const s = decodeURIComponent(slug);
+
+  // 1) Try to grab a full UUID at the end of the slug
+  const uuidMatch = s.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  if (uuidMatch) return uuidMatch[0];
+
+  // 2) Fallback: trailing number id
+  const numMatch = s.match(/(\d+)$/);
+  return numMatch ? numMatch[1] : null;
 }

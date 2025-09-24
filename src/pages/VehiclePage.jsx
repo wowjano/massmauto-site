@@ -9,6 +9,8 @@ export default function VehiclePage() {
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  console.debug("[VehiclePage] slug:", slug, "→ id:", id);
+
   useEffect(() => {
     let ignore = false;
     (async () => {
