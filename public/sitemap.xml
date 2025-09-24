@@ -2,8 +2,44 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://massmauto.com/</loc>
-    <lastmod>2025-09-23</lastmod>
+    <lastmod>2025-09-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2006-toyota-tacoma-sr5-pickup-4d-cf92dac3-d867-404a-a9f4-2f1d5793a4eb</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2010-audi-q5-3-2-quattro-7319e3da-7c02-4336-9f63-f1af0cc1ca6c</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2010-volkswagen-jetta-limited-edition-sedan-12755221-0b28-4019-b43b-82492b85539f</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2006-honda-accord-lx-2dc8d35f-81cc-403f-ade4-c07fb96c2102</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2010-toyota-sienna-ce-2c9a7a2c-b4a9-4cb4-919d-61822c779bcb</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://massmauto.com/inventory/2010-honda-insight-ex-8c5f20b2-c221-4f9a-a681-98970bc90099</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

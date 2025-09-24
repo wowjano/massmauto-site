@@ -19,7 +19,7 @@ import {
   Percent
 } from "lucide-react";
 import QuickViewIcon from "./assets/quickview.svg";
-import { supabase } from "./lib/supabaseClient"; // ⬅️ your client
+import { supabase } from "./lib/supabaseClient";
 import { Link } from "react-router-dom";
 import { slugifyVehicle } from "./lib/slug";
 
@@ -1933,6 +1933,12 @@ useEffect(() => {
     [filtered, page]
   );
 
+  // Build slugs for the cars that are currently visible
+  const carsWithSlugs = useMemo(
+    () => visibleCars.map(c => ({ ...c, slug: slugifyVehicle(c) })),
+    [visibleCars]
+  );
+
   // Modal helpers
   const openModal = (car) => {
     setActive(car);
@@ -1988,10 +1994,7 @@ useEffect(() => {
             setQuery("");
           }}
         />
-        const carsWithSlugs = React.useMemo(
-          () => visibleCars.map(c => ({ ...c, slug: slugifyVehicle(c) })),
-          [visibleCars]
-        );
+
         <InventoryGrid cars={carsWithSlugs} onOpen={openModal} />
 
         {visibleCars.length < filtered.length && (
