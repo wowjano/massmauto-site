@@ -2066,12 +2066,33 @@ useEffect(() => {
                       className="relative h-[50vh] sm:h-[60vh] overflow-hidden rounded-xl"
                       style={{ background: "#0a0a0a" }}
                     >
+                      {/* 🔵 Blurred backdrop like FB Marketplace */}
+                      {active?.photos?.[slide] && (
+                        <>
+                          <img
+                            src={active.photos[slide]}
+                            alt=""
+                            aria-hidden="true"
+                            className="
+                              absolute inset-0 h-full w-full object-cover
+                              scale-[1.12] blur-[22px] opacity-70
+                            "
+                            // tiny perf hints so blur stays smooth on mobile
+                            style={{ willChange: "transform, filter" }}
+                            draggable={false}
+                          />
+                          {/* subtle dark gradient so edges don’t feel washed out */}
+                          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
+                        </>
+                      )}
+
+                      {/* Foreground photo */}
                       <AnimatePresence mode="wait">
                         <motion.img
                           key={active.photos?.[slide] ?? "placeholder"}
                           src={active.photos?.[slide] ?? "https://placehold.co/1200x675?text=No+Image"}
                           alt={`${active?.year ?? ""} ${active?.make ?? ""} ${active?.model ?? ""} - photo ${slide + 1} at Mass Market Auto Sales New Bedford MA`}
-                          className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
+                          className="absolute inset-0 m-auto max-h-full max-w-full object-contain z-10"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
@@ -2083,16 +2104,16 @@ useEffect(() => {
                       {/* Controls */}
                       <button
                         onClick={prevSlide}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-2 shadow"
-                        style={{ backgroundColor: "#fff", color: COLORS.charcoal }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-2 shadow z-20"
+                        style={{ backgroundColor: "#fff", color: "#363732" }}
                         aria-label="Previous photo"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
                       <button
                         onClick={nextSlide}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-2 shadow"
-                        style={{ backgroundColor: "#fff", color: COLORS.charcoal }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-2 shadow z-20"
+                        style={{ backgroundColor: "#fff", color: "#363732" }}
                         aria-label="Next photo"
                       >
                         <ChevronRight className="h-5 w-5" />
@@ -2100,7 +2121,7 @@ useEffect(() => {
 
                       {/* Dots */}
                       {active?.photos?.length > 1 && (
-                        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1">
+                        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 z-20">
                           {active.photos.map((_, i) => (
                             <button
                               key={i}
@@ -2114,7 +2135,7 @@ useEffect(() => {
                       )}
                     </div>
 
-                    {/* Thumbnails */}
+                    {/* Thumbnails stay the same… */}
                     {active?.photos?.length > 1 && (
                       <div className="mt-3 grid grid-cols-5 gap-2">
                         {active.photos.slice(0, 10).map((src, i) => (
