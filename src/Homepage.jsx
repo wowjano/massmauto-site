@@ -1461,8 +1461,16 @@ function FinancingCTA() {
 function LeadForm() {
   const PHONE = "+15083716512";
   const EMAIL = "contact@massmauto.com";
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+
   const [vehicle, setVehicle] = useState("");
   const [message, setMessage] = useState("");
+
+  const [status, setStatus] = useState("idle"); // idle | sending | success | error
+  const [statusText, setStatusText] = useState("");
 
   // Listen for prefill events from VehicleCard
   useEffect(() => {
@@ -1470,6 +1478,7 @@ function LeadForm() {
       const v = e.detail || {};
       const title = v.title || "";
       setVehicle(title);
+
       const parts = [];
       if (v.price != null) parts.push(`Price: $${Number(v.price).toLocaleString()}`);
       if (v.miles != null) parts.push(`Miles: ${Number(v.miles).toLocaleString()} mi`);
@@ -1479,29 +1488,172 @@ function LeadForm() {
     window.addEventListener("lead:prefill", onPrefill);
     return () => window.removeEventListener("lead:prefill", onPrefill);
   }, []);
+
+  // Netlify needs URL-encoded body for fetch POST
+  function encode(data) {
+    return Object.keys(data)
+      .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+      .join("&");
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    // basic validation
+    if (!fullName.trim()) {
+      setStatus("error");
+      setStatusText("Please enter your full name.");
+      return;
+    }
+    if (!phone.trim() && !email.trim()) {
+      setStatus("error");
+      setStatusText("Please include a phone number or email so we can reach you.");
+      return;
+    }
+
+    try {
+      setStatus("sending");
+      setStatusText("");
+
+      const payload = {
+        "form-name": "test-drive",
+        fullName,
+        phone,
+        email,
+        vehicle,
+        message,
+      };
+
+      const res = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encode(payload),
+      });
+
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      setStatus("success");
+      setStatusText("Message sent! We’ll reach out shortly.");
+
+      // optional: clear fields after success
+      setFullName("");
+      setPhone("");
+      setEmail("");
+      // keep vehicle/message if you prefer, or clear them too:
+      // setVehicle("");
+      // setMessage("");
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+      setStatusText("Something went wrong. Please try again, or call/text us.");
+    }
+  }
+
   return (
     <section id="contact" className="mx-auto max-w-7xl px-4 mt-14 scroll-mt-28">
-      <div className="rounded-3xl border p-6 md:p-8 bg-white/80 shadow-sm grid md:grid-cols-2 gap-6" style={{ borderColor: COLORS.mist }}>
+      <div
+        className="rounded-3xl border p-6 md:p-8 bg-white/80 shadow-sm grid md:grid-cols-2 gap-6"
+        style={{ borderColor: COLORS.mist }}
+      >
         <div>
-          <div className="text-2xl font-bold" style={{ color: COLORS.charcoal }}>Have a question? Book a test drive.</div>
-          <p className="mt-2 text-gray-700">We’ll respond fast — usually within the hour.</p>
-          <div className="mt-4 text-sm text-gray-600 flex items-center gap-2"><Phone size={16}/> <a className="underline" href={`tel:${PHONE}`}> (508) 371-6512</a></div>
-          <div className="mt-1 text-sm text-gray-600 flex items-center gap-2"><Mail size={16}/> <a className="underline" href={`mailto:${EMAIL}`}>{EMAIL}</a></div>
-          <div className="mt-1 text-sm text-gray-600 flex items-center gap-2"><MapPin size={16}/> 20 Granfield St, New Bedford, MA</div>
-        </div>
-        <form className="grid grid-cols-1 gap-3" onSubmit={(e) => e.preventDefault()}>
-          <input className="rounded-xl border px-3 py-2" placeholder="Full name" style={{ borderColor: COLORS.mist }} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input className="rounded-xl border px-3 py-2" placeholder="Phone" style={{ borderColor: COLORS.mist }} />
-            <input className="rounded-xl border px-3 py-2" placeholder="Email" style={{ borderColor: COLORS.mist }} />
+          <div className="text-2xl font-bold" style={{ color: COLORS.charcoal }}>
+            Have a question? Book a test drive.
           </div>
+          <p className="mt-2 text-gray-700">We’ll respond fast — usually within the hour.</p>
+
+          <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
+            <Phone size={16} />{" "}
+            <a className="underline" href={`tel:${PHONE}`}>
+              (508) 371-6512
+            </a>
+          </div>
+          <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+            <Mail size={16} />{" "}
+            <a className="underline" href={`mailto:${EMAIL}`}>
+              {EMAIL}
+            </a>
+          </div>
+          <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+            <MapPin size={16} /> 20 Granfield St, New Bedford, MA
+          </div>
+
+          {/* Status banner */}
+          {status !== "idle" && (
+            <div
+              className="mt-4 rounded-xl border px-4 py-3 text-sm"
+              style={{
+                borderColor: COLORS.mist,
+                background:
+                  status === "success"
+                    ? "rgba(187, 247, 208, 0.5)"
+                    : status === "error"
+                    ? "rgba(254, 202, 202, 0.5)"
+                    : "rgba(220, 225, 233, 0.5)",
+                color: COLORS.charcoal,
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              {status === "sending" ? "Sending…" : statusText}
+            </div>
+          )}
+        </div>
+
+        {/* ✅ Netlify Forms wiring */}
+        <form
+          className="grid grid-cols-1 gap-3"
+          onSubmit={handleSubmit}
+          name="test-drive"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+        >
+          {/* required hidden input for Netlify */}
+          <input type="hidden" name="form-name" value="test-drive" />
+          {/* honeypot */}
+          <p className="hidden">
+            <label>
+              Don’t fill this out: <input name="bot-field" />
+            </label>
+          </p>
+
+          <input
+            className="rounded-xl border px-3 py-2"
+            placeholder="Full name"
+            style={{ borderColor: COLORS.mist }}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            name="fullName"
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              className="rounded-xl border px-3 py-2"
+              placeholder="Phone"
+              style={{ borderColor: COLORS.mist }}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              name="phone"
+            />
+            <input
+              className="rounded-xl border px-3 py-2"
+              placeholder="Email"
+              style={{ borderColor: COLORS.mist }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+            />
+          </div>
+
           <input
             className="rounded-xl border px-3 py-2"
             placeholder="Vehicle (optional): e.g., 2016 Toyota Camry"
             style={{ borderColor: COLORS.mist }}
             value={vehicle}
             onChange={(e) => setVehicle(e.target.value)}
+            name="vehicle"
           />
+
           <textarea
             className="rounded-xl border px-3 py-2"
             rows={4}
@@ -1509,15 +1661,31 @@ function LeadForm() {
             style={{ borderColor: COLORS.mist }}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            name="message"
           />
+
           <div className="flex flex-wrap gap-2 items-center">
-            <button type="button" className="rounded-2xl px-4 py-2 font-semibold shadow-sm" style={{ backgroundColor: COLORS.sky, color: "#0b2e3a" }}>
-              Send Message
+            {/* ✅ submit button */}
+            <button
+              type="submit"
+              disabled={status === "sending"}
+              className="rounded-2xl px-4 py-2 font-semibold shadow-sm disabled:opacity-70"
+              style={{ backgroundColor: COLORS.sky, color: "#0b2e3a" }}
+            >
+              {status === "sending" ? "Sending..." : "Send Message"}
             </button>
-            <a href={`tel:${PHONE}`} className="text-sm underline" style={{ color: COLORS.azure }}>Prefer to call? Tap here.</a>
-            <a href={`mailto:${EMAIL}`} className="text-sm underline" style={{ color: COLORS.azure }}>Or email us.</a>
+
+            <a href={`tel:${PHONE}`} className="text-sm underline" style={{ color: COLORS.azure }}>
+              Prefer to call? Tap here.
+            </a>
+            <a href={`mailto:${EMAIL}`} className="text-sm underline" style={{ color: COLORS.azure }}>
+              Or email us.
+            </a>
           </div>
-          <p className="text-xs text-gray-500">By submitting, you agree to be contacted by Mass Market Auto Sales.</p>
+
+          <p className="text-xs text-gray-500">
+            By submitting, you agree to be contacted by Mass Market Auto Sales.
+          </p>
         </form>
       </div>
     </section>
