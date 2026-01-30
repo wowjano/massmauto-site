@@ -1310,13 +1310,13 @@ function FinancingCTA() {
               Fast, flexible financing
             </h2>
 
-            <a
-              href="#/apply"
+            <Link
+              to="/apply"
               className="inline-flex items-center justify-center rounded-2xl px-5 py-2 font-semibold shadow-sm"
               style={{ backgroundColor: COLORS.sky, color: "#0b2e3a" }}
             >
               Apply Now
-            </a>
+            </Link>
           </div>
 
           {/* Estimate card */}
