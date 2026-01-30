@@ -1305,9 +1305,19 @@ function FinancingCTA() {
         style={{ borderColor: COLORS.mist, background: `linear-gradient(135deg, ${COLORS.azure}35, ${COLORS.sky}25)` }}
       >
         <div className="p-6 md:p-8">
-          <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.charcoal }}>
-            Fast, flexible financing
-          </h2>
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-2xl font-bold" style={{ color: COLORS.charcoal }}>
+              Fast, flexible financing
+            </h2>
+
+            <a
+              href="#/apply"
+              className="inline-flex items-center justify-center rounded-2xl px-5 py-2 font-semibold shadow-sm"
+              style={{ backgroundColor: COLORS.sky, color: "#0b2e3a" }}
+            >
+              Apply Now
+            </a>
+          </div>
 
           {/* Estimate card */}
           <div
