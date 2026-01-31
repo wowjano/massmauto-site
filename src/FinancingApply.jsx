@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Lock, Phone, Mail } from "lucide-react";
 
 const COLORS = {
@@ -18,6 +18,10 @@ function encode(data) {
 export default function FinancingApply() {
   const PHONE = "+15083716512";
   const EMAIL = "contact@massmauto.com";
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
 
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
   const [statusText, setStatusText] = useState("");
