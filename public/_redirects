@@ -1,2 +1,10 @@
+# --- Canonical host enforcement -------------------------------------------
+# These MUST come before the SPA catch-all below. Netlify processes rules top
+# to bottom and the first match wins, so a leading /* rule swallows everything.
+https://massmauto.netlify.app/*   https://massmauto.com/:splat   301!
+http://massmauto.netlify.app/*    https://massmauto.com/:splat   301!
+https://www.massmauto.com/*       https://massmauto.com/:splat   301!
+
+# --- SPA fallback ----------------------------------------------------------
+# Every other path is served index.html and handled by react-router.
 /*    /index.html   200
-https://www.massmauto.com/*   https://massmauto.com/:splat   301!

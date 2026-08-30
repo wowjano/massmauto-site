@@ -53,6 +53,91 @@ export default function VehiclePage() {
     link.href = `https://massmauto.com/inventory/${slug}`;
   }, [car, slug]);
 
+  // ---------------------------------------------------------------------
+  // Structured data: make this listing eligible for vehicle rich results.
+  // Injected at runtime and cleaned up on unmount so client-side navigation
+  // never leaves two competing blocks in the head.
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    if (!car) return undefined;
+
+    const name = `${car.year} ${car.make} ${car.model}${car.trim ? " " + car.trim : ""}`;
+    const canonical = `https://massmauto.com/inventory/${slug}`;
+
+    const payload = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Car",
+          name,
+          url: canonical,
+          ...(car.photos?.length ? { image: car.photos } : {}),
+          ...(car.description ? { description: car.description } : {}),
+          ...(car.vin ? { vehicleIdentificationNumber: car.vin } : {}),
+          ...(car.year ? { vehicleModelDate: String(car.year) } : {}),
+          ...(car.make ? { brand: { "@type": "Brand", name: car.make } } : {}),
+          ...(car.model ? { model: car.model } : {}),
+          ...(car.body_type ? { bodyType: car.body_type } : {}),
+          itemCondition: "https://schema.org/UsedCondition",
+          ...(car.miles
+            ? {
+                mileageFromOdometer: {
+                  "@type": "QuantitativeValue",
+                  value: Number(car.miles),
+                  unitCode: "SMI",
+                },
+              }
+            : {}),
+          offers: {
+            "@type": "Offer",
+            price: Number(car.price ?? 0),
+            priceCurrency: "USD",
+            availability:
+              car.status === "sold"
+                ? "https://schema.org/SoldOut"
+                : "https://schema.org/InStock",
+            url: canonical,
+            seller: {
+              "@type": "AutoDealer",
+              name: "Mass Market Auto Sales",
+              alternateName: "Mass Market Auto",
+              telephone: "+1-508-371-6512",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "20 Granfield St",
+                addressLocality: "New Bedford",
+                addressRegion: "MA",
+                postalCode: "02746",
+                addressCountry: "US",
+              },
+            },
+          },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://massmauto.com/" },
+            { "@type": "ListItem", position: 2, name: name, item: canonical },
+          ],
+        },
+      ],
+    };
+
+    let el = document.getElementById("ld-vehicle");
+    if (!el) {
+      el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.id = "ld-vehicle";
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(payload);
+
+    return () => {
+      const node = document.getElementById("ld-vehicle");
+      if (node) node.remove();
+    };
+  }, [car, slug]);
+
   if (loading) return <div className="p-6">Loading…</div>;
   if (!car) return <div className="p-6">Vehicle not found. <Link className="underline" to="/">Back to inventory</Link></div>;
 

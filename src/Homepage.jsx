@@ -22,6 +22,8 @@ import QuickViewIcon from "./assets/quickview.svg";
 import { supabase } from "./lib/supabaseClient";
 import { Link } from "react-router-dom";
 import { slugifyVehicle } from "./lib/slug";
+import { CITIES } from "./content/cities.js";
+import { REVIEW_URL } from "./lib/theme.js";
 
 // Brand colors (kept)
 const COLORS = {
@@ -1764,6 +1766,30 @@ function Testimonials() {
           <div className="mt-2 text-xs text-gray-500">— Dasan J</div>
         </div>
       </div>
+
+      {/* Review request. REVIEW_URL opens the Google star box directly. */}
+      <div
+        className="mt-6 rounded-2xl border p-5 flex flex-wrap items-center justify-between gap-4"
+        style={{ borderColor: COLORS.mist }}
+      >
+        <div>
+          <div className="font-semibold" style={{ color: COLORS.charcoal }}>
+            Bought a car from us?
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            We’re a small family-run lot — a quick Google review makes a real difference for us.
+          </p>
+        </div>
+        <a
+          href={REVIEW_URL}
+          target="_blank"
+          rel="noopener"
+          className="px-4 py-2 rounded-xl font-semibold text-white text-sm shrink-0"
+          style={{ backgroundColor: COLORS.charcoal }}
+        >
+          Leave a Google review
+        </a>
+      </div>
     </section>
   );
 }
@@ -1777,6 +1803,18 @@ function AboutTeaser() {
           We’re a local Massachusetts Class II dealer offering quality, inspected vehicles. Our renovated office and 3-bay shop
           mean every car gets attention before it hits the lot. Conveniently located off the highway near Market Basket — with
           access from Granfield St and Belleville Ave.
+        </p>
+        <p className="mt-3 text-gray-700">
+          Every vehicle is road-tested and inspected in our own shop before it goes out on the lot. We handle financing
+          here rather than handing you off, we appraise trade-ins on the spot, and we take care of the Massachusetts RMV
+          paperwork so you are not the one standing in line.
+        </p>
+        <p className="mt-3 text-gray-700">
+          We serve buyers from across the SouthCoast —{" "}
+          <Link to="/used-cars-new-bedford" className="underline">New Bedford</Link>,{" "}
+          <Link to="/used-cars-dartmouth" className="underline">Dartmouth</Link>,{" "}
+          <Link to="/used-cars-fairhaven" className="underline">Fairhaven</Link>, and{" "}
+          <Link to="/used-cars-acushnet" className="underline">Acushnet</Link> — plus Wareham, Marion, and Rochester.
         </p>
       </div>
       <div className="rounded-2xl overflow-hidden border" style={{ borderColor: COLORS.mist }}>
@@ -1792,7 +1830,7 @@ function Footer() {
   return (
     <footer id="footer" className="mt-20">
       <div className="mx-auto max-w-7xl px-4 py-10 rounded-t-3xl" style={{ background: COLORS.charcoal, color: "white" }}>
-        <div className="grid md:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-6">
           <div>
             <div className="font-bold text-lg">Mass Market Auto Sales</div>
             <div className="text-sm opacity-80 mt-1">Quality used cars in New Bedford, MA.</div>
@@ -1813,6 +1851,18 @@ function Footer() {
               <li><a href="#about" className="underline">About us</a></li>
               <li><a href="#reviews" className="underline">Reviews</a></li>
               <li><a href="#contact" className="underline">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className="font-semibold">Service Area</div>
+            <ul className="mt-2 space-y-2 text-sm opacity-90">
+              {CITIES.map((c) => (
+                <li key={c.slug}>
+                  <Link to={`/${c.slug}`} className="underline">
+                    {c.city}, {c.region}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
@@ -2074,10 +2124,35 @@ useEffect(() => {
   );
 
   const filtered = useMemo(() => {
+    // Sold cars are a showcase — "look how many we move" — so they belong on the
+    // default homepage view only. The moment a shopper searches, picks a make or
+    // body type, narrows price or mileage, or changes the sort, they are looking
+    // for something they can actually buy, so sold cars drop out of the results
+    // entirely instead of sinking to the bottom of the list.
+    //
+    // This only affects which cars are IN the results. How a sold car looks when
+    // it is shown (dimmed photo, red SOLD badge, sorted last) is untouched.
+    const isRange = (r) => r && typeof r === "object";
+    const priceIsDefault = !isRange(priceRange) || (priceRange.min == null && priceRange.max == null);
+    const milesIsDefault =
+      miles == null ||
+      miles === "Any" ||
+      (isRange(miles) && miles.min == null && miles.max == null);
+
+    const isDefaultView =
+      !query.trim() &&
+      !make &&
+      !bodyType &&
+      priceIsDefault &&
+      milesIsDefault &&
+      sort === "featured";
+
     const arr = inventory.filter((c) => {
       const q = query.trim().toLowerCase();
       const base = `${c.year} ${c.make} ${c.model} ${(c.features || []).join(" ")}`.toLowerCase();
+      const isSold = String(c.status ?? "").toLowerCase() === "sold";
       return (
+        (isDefaultView || !isSold) &&
         (!q || base.includes(q)) &&
         (!make || c.make === make) &&
         (!bodyType || c.bodyType === bodyType) &&  
