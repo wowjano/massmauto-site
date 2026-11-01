@@ -23,9 +23,12 @@ export default function FinancingApply() {
   const PHONE = "+15083716512";
   const EMAIL = "contact@massmauto.com";
 
-  // ✅ Replace this URL with your DealerCenter secure credit app link (when you have it)
-  // Example could be a DealerCenter hosted credit app or another secure lender portal.
-  const DEALERCENTER_CREDIT_APP_URL = "https://YOUR-DEALERCENTER-CREDIT-APP-LINK";
+  // DealerCenter secure credit app (Settings → Websites → 3rd Party Settings →
+  // Credit App URL Generator → "Generate URL Standalone"). Customers enter their
+  // SSN here, on DealerCenter's secure form — never on our own site.
+  // themecolor = brand charcoal, formtype=l = long form, ls = lead source tag.
+  const DEALERCENTER_CREDIT_APP_URL =
+    "https://dwssecuredforms.dealercenter.net/CreditApplication/index/24357017?themecolor=363732&formtype=l&frameId=dws_frame_0&standalone=true&ls=Our%20Website";
 
   // Scroll to top when arriving on this page
   useEffect(() => {

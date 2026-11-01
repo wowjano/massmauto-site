@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { BODY_TYPES } from "../lib/bodyTypes";
 
 /**
  * Inventory Admin
@@ -486,10 +487,9 @@ export default function Admin() {
                 className="border border-gray-300 rounded-lg px-3 py-2 bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
               >
                 <option value="">— Body Type —</option>
-                <option value="SUV">SUV</option>
-                <option value="Sedan">Sedan</option>
-                <option value="Truck">Truck</option>
-                <option value="Van">Van</option>
+                {BODY_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
               <select
                 value={form.status}

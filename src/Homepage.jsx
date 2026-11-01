@@ -16,7 +16,8 @@ import {
   Mail,
   ArrowUpDown,
   Gauge,
-  Percent
+  Percent,
+  Search
 } from "lucide-react";
 import QuickViewIcon from "./assets/quickview.svg";
 import { supabase } from "./lib/supabaseClient";
@@ -24,6 +25,7 @@ import { Link } from "react-router-dom";
 import { slugifyVehicle } from "./lib/slug";
 import { CITIES } from "./content/cities.js";
 import { REVIEW_URL } from "./lib/theme.js";
+import { orderBodyTypes } from "./lib/bodyTypes.js";
 
 // Brand colors (kept)
 const COLORS = {
@@ -222,7 +224,7 @@ function Header() {
   );
 }
 
-function Hero() {
+function Hero({ query, setQuery }) {
   return (
     <section className="relative overflow-hidden">
       <div
@@ -256,6 +258,48 @@ function Hero() {
             <span className="hidden sm:inline text-gray-500 text-sm">customer rating</span>
           </div>
         </div>
+
+        {/* Keyword search — full width on phones, centered on larger screens */}
+        <form
+          role="search"
+          className="mx-auto mt-5 w-full max-w-xl"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.currentTarget.querySelector("input")?.blur(); // closes the phone keyboard
+            document.getElementById("inventory")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        >
+          <label htmlFor="inventory-search" className="sr-only">Search inventory</label>
+          <div className="relative">
+            <Search
+              size={20}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              aria-hidden="true"
+            />
+            <input
+              id="inventory-search"
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search make, model, or year"
+              className="search-input h-12 w-full rounded-2xl border bg-white pl-12 pr-12 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-[#66c3ff]/50"
+              style={{ borderColor: COLORS.mist, color: COLORS.charcoal }}
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </section>
   );
@@ -884,10 +928,9 @@ function Filters({
                 onChange={(e) => setBodyType(e.target.value)}
               >
                 <option value="">All Body Types</option>
-                <option value="SUV">SUV</option>
-                <option value="Sedan">Sedan</option>
-                <option value="Truck">Truck</option>
-                <option value="Van">Van</option>
+                {bodyTypes.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
             </div>
           </Control>
@@ -993,10 +1036,9 @@ function Filters({
                     onChange={(e) => setBodyType(e.target.value)}
                   >
                     <option value="">All Body Types</option>
-                    <option value="SUV">SUV</option>
-                    <option value="Sedan">Sedan</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Van">Van</option>
+                    {bodyTypes.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
                   </select>
                 </div>
               </Control>
@@ -1942,6 +1984,10 @@ function RangeCSS() {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
       
+      /* Hide the browser's built-in clear "x" on the search box (we draw our own) */
+      .search-input::-webkit-search-cancel-button,
+      .search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+
       /* Hide scrollbars for horizontal filter scroller */
       .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
       .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -2101,6 +2147,7 @@ useEffect(() => {
               features: [],
               bodyType: v.body_type || null,
               status: v.status,
+              createdAt: v.created_at ? new Date(v.created_at).getTime() : 0,
               isNew,
             };
           });
@@ -2118,8 +2165,9 @@ useEffect(() => {
     [inventory]
   );
 
+  // Only offer body types that are actually in stock, in a consistent order.
   const ALL_BODY_TYPES = useMemo(
-    () => [...new Set(inventory.map((c) => c.bodyType).filter(Boolean))],
+    () => orderBodyTypes([...new Set(inventory.map((c) => c.bodyType).filter(Boolean))]),
     [inventory]
   );
 
@@ -2148,12 +2196,14 @@ useEffect(() => {
       sort === "featured";
 
     const arr = inventory.filter((c) => {
-      const q = query.trim().toLowerCase();
-      const base = `${c.year} ${c.make} ${c.model} ${(c.features || []).join(" ")}`.toLowerCase();
+      // Every word typed must appear somewhere, in any order:
+      // "civic 2016" and "2016 honda civic" both find a 2016 Honda Civic.
+      const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      const base = `${c.year} ${c.make} ${c.model} ${c.bodyType ?? ""} ${(c.features || []).join(" ")}`.toLowerCase();
       const isSold = String(c.status ?? "").toLowerCase() === "sold";
       return (
         (isDefaultView || !isSold) &&
-        (!q || base.includes(q)) &&
+        words.every((w) => base.includes(w)) &&
         (!make || c.make === make) &&
         (!bodyType || c.bodyType === bodyType) &&  
         priceFilter(c, priceRange) &&
@@ -2172,7 +2222,8 @@ useEffect(() => {
         case "miles_asc":  return (a.miles ?? Infinity) - (b.miles ?? Infinity);
         case "year_desc":  return (b.year ?? 0) - (a.year ?? 0);
         case "year_asc":   return (a.year ?? 0) - (b.year ?? 0);
-        case "newest":     return (b.id ?? 0) - (a.id ?? 0);
+        // IDs are random UUIDs, so "newest" has to come from the date the car was added.
+        case "newest":     return (b.createdAt ?? 0) - (a.createdAt ?? 0);
         default:           return 0; // featured
       }
     });
@@ -2221,7 +2272,7 @@ useEffect(() => {
     <div className="min-h-screen" style={{ backgroundColor: "#f7f9fb" }}>
       <RangeCSS />
       <Header />
-      <Hero />
+      <Hero query={query} setQuery={setQuery} />
 
       <section id="inventory" className="mt-2 scroll-mt-24 sm:scroll-mt-28">
         <Filters
@@ -2249,6 +2300,44 @@ useEffect(() => {
         />
 
         <InventoryGrid cars={carsWithSlugs} onOpen={openModal} />
+
+        {inventory.length > 0 && filtered.length === 0 && (
+          <div className="mx-auto max-w-7xl px-4 mt-6">
+            <div
+              className="rounded-2xl border bg-white p-6 sm:p-8 text-center"
+              style={{ borderColor: COLORS.mist }}
+            >
+              <div className="text-lg font-semibold" style={{ color: COLORS.charcoal }}>
+                No cars match that search
+              </div>
+              <p className="mt-1 text-sm text-gray-600">
+                Try fewer words or clear your filters. New inventory arrives weekly — call or text and we’ll keep an eye out for you.
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMake(""); setBodyType("");
+                    setPriceRange({ min: null, max: null });
+                    setMiles({ min: null, max: null });
+                    setSort("featured"); setQuery("");
+                  }}
+                  className="w-full sm:w-auto rounded-xl px-4 py-2.5 font-semibold shadow-sm"
+                  style={{ backgroundColor: COLORS.sky, color: "#0b2e3a" }}
+                >
+                  Clear search &amp; filters
+                </button>
+                <a
+                  href="tel:+15083716512"
+                  className="w-full sm:w-auto rounded-xl border px-4 py-2.5 font-semibold"
+                  style={{ borderColor: COLORS.mist, color: COLORS.charcoal }}
+                >
+                  Call / Text (508) 371-6512
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {visibleCars.length < filtered.length && (
           <div className="mx-auto max-w-7xl px-4 mt-4 mb-2">
