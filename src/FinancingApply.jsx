@@ -27,6 +27,11 @@ export default function FinancingApply() {
   // Credit App URL Generator → "Generate URL Standalone"). Customers enter their
   // SSN here, on DealerCenter's secure form — never on our own site.
   // themecolor = brand charcoal, formtype=l = long form, ls = lead source tag.
+  // Flip to true once DealerCenter confirms the online credit app works from our
+  // site. Right now their form answers "This page cannot be embedded", so instead
+  // of sending customers to an error page we text them the secure link ourselves.
+  const CREDIT_APP_ONLINE = false;
+
   const DEALERCENTER_CREDIT_APP_URL =
     "https://dwssecuredforms.dealercenter.net/CreditApplication/index/24357017?themecolor=363732&formtype=l&frameId=dws_frame_0&standalone=true&ls=Our%20Website";
 
@@ -329,8 +334,13 @@ export default function FinancingApply() {
 
       setStatus("success");
       setStatusText(
-        "Application submitted! Next, please complete the secure credit application to enter your SSN and run approval."
+        CREDIT_APP_ONLINE
+          ? "Application submitted! Next, please complete the secure credit application to enter your SSN and run approval."
+          : "Application received! We’ll text you a secure link to finish your credit application — that’s where you’ll enter your SSN. Questions? Call or text (508) 371-6512."
       );
+      // The confirmation shows at the top of the form; on a phone the customer is
+      // at the bottom after tapping Submit, so bring it into view.
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(err);
       setStatus("error");
@@ -488,7 +498,9 @@ export default function FinancingApply() {
 
             <div className="text-xs text-gray-600 flex items-center gap-2">
               <Lock size={14} />
-              SSN is collected on the secure credit application (next step).
+              {CREDIT_APP_ONLINE
+                ? "SSN is collected on the secure credit application (next step)."
+                : "We never ask for your SSN on this page — we’ll text you a secure link for that step."}
             </div>
           </section>
 
@@ -767,7 +779,9 @@ export default function FinancingApply() {
             </label>
 
             <p className="text-xs text-gray-500">
-              After you submit this form, you’ll complete the secure credit application to enter your SSN.
+              {CREDIT_APP_ONLINE
+                ? "After you submit this form, you’ll complete the secure credit application to enter your SSN."
+                : "After you submit, we’ll text you a secure link to finish your credit application (that’s where you enter your SSN)."}
             </p>
           </section>
 
@@ -782,10 +796,14 @@ export default function FinancingApply() {
               {status === "sending" ? "Submitting..." : "Submit Application"}
             </button>
 
+            {CREDIT_APP_ONLINE && (
             <a
               href={DEALERCENTER_CREDIT_APP_URL}
               target="_blank"
-              rel="noreferrer"
+              // "noopener" (not "noreferrer"): DealerCenter only shows the form when the
+              // browser says the visitor came from a whitelisted site (massmauto.com).
+              rel="noopener"
+              referrerPolicy="origin"
               className="rounded-2xl px-5 py-2 font-semibold shadow-sm border"
               style={{ borderColor: COLORS.mist }}
               title="Opens a secure credit application to enter SSN"
@@ -794,8 +812,9 @@ export default function FinancingApply() {
                 Continue to Secure Credit App <ExternalLink size={16} />
               </span>
             </a>
+            )}
 
-            <a className="text-sm underline" style={{ color: COLORS.azure }} href="#finance">
+            <a className="text-sm underline" style={{ color: COLORS.azure }} href="/#finance">
               Back to Financing Calculator
             </a>
           </div>
