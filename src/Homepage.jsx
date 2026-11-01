@@ -24,7 +24,7 @@ import { supabase } from "./lib/supabaseClient";
 import { Link } from "react-router-dom";
 import { slugifyVehicle } from "./lib/slug";
 import { CITIES } from "./content/cities.js";
-import { REVIEW_URL } from "./lib/theme.js";
+import { REVIEW_URL, GOOGLE_MAPS_URL } from "./lib/theme.js";
 import { orderBodyTypes } from "./lib/bodyTypes.js";
 import { trackEvent, vehicleParams } from "./lib/track.js";
 
@@ -249,15 +249,20 @@ function Hero({ query, setQuery }) {
             Find your next car below
           </h2>
 
-          {/* Rating pill (baseline aligned with headline) */}
-          <div
-            className="shrink-0 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-base bg-white/90 shadow-sm self-center"
+          {/* Rating pill — matches the Google Business Profile rating (5.0).
+              Links to the real reviews so shoppers can check it themselves. */}
+          <a
+            href={GOOGLE_MAPS_URL}
+            target="_blank"
+            rel="noopener"
+            aria-label="5.0 out of 5.0 stars on Google — read our reviews"
+            className="shrink-0 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-base bg-white/90 shadow-sm self-center hover:shadow-md transition-shadow"
             style={{ borderColor: COLORS.mist, color: COLORS.charcoal }}
           >
             <Star size={22} className="text-yellow-500" fill="currentColor" />
-            <span className="font-semibold text-base">4.9/5</span>
-            <span className="hidden sm:inline text-gray-500 text-sm">customer rating</span>
-          </div>
+            <span className="font-semibold text-base">5.0/5</span>
+            <span className="hidden sm:inline text-gray-500 text-sm">on Google</span>
+          </a>
         </div>
 
         {/* Keyword search — full width on phones, centered on larger screens */}
