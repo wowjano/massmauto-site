@@ -26,6 +26,7 @@ import { slugifyVehicle } from "./lib/slug";
 import { CITIES } from "./content/cities.js";
 import { REVIEW_URL } from "./lib/theme.js";
 import { orderBodyTypes } from "./lib/bodyTypes.js";
+import { trackEvent, vehicleParams } from "./lib/track.js";
 
 // Brand colors (kept)
 const COLORS = {
@@ -1588,6 +1589,7 @@ function LeadForm() {
 
       setStatus("success");
       setStatusText("Message sent! We’ll reach out shortly.");
+      trackEvent("generate_lead", { form_name: "test-drive", vehicle: vehicle || "(none)" });
 
       // optional: clear fields after success
       setFullName("");
@@ -2159,6 +2161,19 @@ useEffect(() => {
     return () => { ignore = true; };
   }, []);
 
+  // Report searches to Google Analytics once the shopper stops typing,
+  // so "c", "ci", "civ"… don't each count as a search.
+  const lastTrackedSearch = useRef("");
+  useEffect(() => {
+    const term = query.trim().toLowerCase();
+    if (term.length < 2 || term === lastTrackedSearch.current) return;
+    const t = setTimeout(() => {
+      lastTrackedSearch.current = term;
+      trackEvent("search", { search_term: term });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [query]);
+
   // Build the Make list from live data
   const ALL_MAKES = useMemo(
     () => [...new Set(inventory.map((c) => c.make))],
@@ -2247,6 +2262,7 @@ useEffect(() => {
   const openModal = (car) => {
     setActive(car);
     setSlide(0);
+    trackEvent("view_item", { ...vehicleParams(car), view_type: "quick_view" });
 
     // 🔔 Tell the estimator to use this car's price and a 10% default down
     if (typeof car?.price === "number" && car.price > 0) {

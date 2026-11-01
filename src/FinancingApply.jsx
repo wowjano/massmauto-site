@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Phone, Mail, ExternalLink } from "lucide-react";
+import { trackEvent } from "./lib/track.js";
 
 const COLORS = {
   charcoal: "#363732",
@@ -333,6 +334,7 @@ export default function FinancingApply() {
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
 
       setStatus("success");
+      trackEvent("generate_lead", { form_name: "financing-application" });
       setStatusText(
         CREDIT_APP_ONLINE
           ? "Application submitted! Next, please complete the secure credit application to enter your SSN and run approval."

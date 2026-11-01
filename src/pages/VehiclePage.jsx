@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getIdFromSlug } from "../lib/slug";
 import { supabase } from "../lib/supabaseClient";
+import { trackEvent, vehicleParams } from "../lib/track.js";
 
 export default function VehiclePage() {
   const { slug } = useParams();
@@ -29,6 +30,10 @@ export default function VehiclePage() {
     })();
     return () => (ignore = true);
   }, [id]);
+
+  useEffect(() => {
+    if (car) trackEvent("view_item", { ...vehicleParams(car), view_type: "vehicle_page" });
+  }, [car]);
 
   useEffect(() => {
     if (!car) return;
